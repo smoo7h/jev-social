@@ -33,7 +33,7 @@ test("classifySearch routes a search with Jev's structured answer", async () => 
   assert.equal(request.questions.route.type, "choice");
 });
 
-test("classifySearch calls OpenRouter's Decisions endpoint", async () => {
+test("classifySearch calls TypeSafe's System One endpoint with the pinned model", async () => {
   let url;
   let options;
   const result = await classifySearch({
@@ -44,7 +44,7 @@ test("classifySearch calls OpenRouter's Decisions endpoint", async () => {
       options = nextOptions;
       return new Response(
         JSON.stringify({
-          model: "typesafe/jev-test",
+          model: "jev-1.13.0",
           answers: { route: { type: "choice", choice: "instagram_search", confidence: 0.9 } },
           usage: {},
         }),
@@ -52,9 +52,9 @@ test("classifySearch calls OpenRouter's Decisions endpoint", async () => {
       );
     },
   });
-  assert.equal(url, "https://openrouter.ai/api/alpha/decisions");
-  assert.match(options.headers.Authorization, /^Bearer /);
-  assert.equal(JSON.parse(options.body).model, "~typesafe/jev-latest");
+  assert.equal(url, "https://api.typesafe.ai/v1/systemone");
+  assert.equal(options.headers.Authorization, "Bearer 101");
+  assert.equal(JSON.parse(options.body).model, "jev-1.13.0");
   assert.equal(result.platform, "instagram");
 });
 

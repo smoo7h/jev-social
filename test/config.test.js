@@ -3,7 +3,7 @@ import { mkdtemp, rm, stat } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { getConfigPath, readConfig, writeConfig } from "../src/config.js";
+import { getConfigPath, readConfig, resolveApiKey, writeConfig } from "../src/config.js";
 
 test("config is round-tripped with owner-only permissions", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "jev-social-config-"));
@@ -18,4 +18,12 @@ test("config is round-tripped with owner-only permissions", async () => {
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test("resolveApiKey prefers TYPESAFE_API_KEY over OpenRouter and config keys", () => {
+  assert.equal(
+    resolveApiKey({ openrouterApiKey: "config" }, { TYPESAFE_API_KEY: " ts ", OPENROUTER_API_KEY: "or" }),
+    "ts",
+  );
+  assert.equal(resolveApiKey({}, { OPENROUTER_API_KEY: "or" }), "or");
 });

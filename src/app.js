@@ -48,9 +48,9 @@ export async function runSearch(
   }
 
   const apiKey = resolveApiKey(config, env);
-  if (!apiKey && !client) throw new AppError("Set OPENROUTER_API_KEY first.", { code: "ONBOARDING_REQUIRED" });
+  if (!apiKey && !client) throw new AppError("Set TYPESAFE_API_KEY first.", { code: "ONBOARDING_REQUIRED" });
   const startedAt = Date.now();
-  const model = env.OPENROUTER_JEV_MODEL || "~typesafe/jev-latest";
+  const model = env.OPENROUTER_JEV_MODEL || "jev-1.13.0";
   const decisionOptions = { apiKey, model, client, signal };
   onEvent?.({ stage: "classifying", message: "Jev is choosing the social platform…" });
   const classification = await classifySearch({

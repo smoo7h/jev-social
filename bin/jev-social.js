@@ -45,7 +45,7 @@ try {
       JSON.stringify(
         {
           jevConfigured: Boolean(resolveApiKey(config)),
-          jevModel: process.env.OPENROUTER_JEV_MODEL || "~typesafe/jev-latest",
+          jevModel: process.env.OPENROUTER_JEV_MODEL || "jev-1.13.0",
           configPath: getConfigPath(),
           socai: await probeSocai(config),
         },

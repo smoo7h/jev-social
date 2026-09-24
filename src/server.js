@@ -91,7 +91,7 @@ async function handleRequest(request, response, env, mediaRegistry) {
       } catch {
         return sendJson(response, 200, {
           jevConfigured: false,
-          jevModel: env.OPENROUTER_JEV_MODEL || "~typesafe/jev-latest",
+          jevModel: env.OPENROUTER_JEV_MODEL || "jev-1.13.0",
           socai: { installed: false, version: null, capabilities: { instagram: false, tiktok: false, linkedin: false } },
           configError: "Configuration could not be read.",
         });
@@ -99,7 +99,7 @@ async function handleRequest(request, response, env, mediaRegistry) {
       const socai = await probeSocai(config, env);
       return sendJson(response, 200, {
         jevConfigured: Boolean(resolveApiKey(config, env)),
-        jevModel: env.OPENROUTER_JEV_MODEL || "~typesafe/jev-latest",
+        jevModel: env.OPENROUTER_JEV_MODEL || "jev-1.13.0",
         socai: {
           installed: socai.installed,
           version: socai.version ?? null,

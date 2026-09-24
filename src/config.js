@@ -36,6 +36,7 @@ export async function writeConfig(next, env = process.env) {
 
 export function resolveApiKey(config, env = process.env) {
   return (
+    env.TYPESAFE_API_KEY?.trim() ||
     env.OPENROUTER_API_KEY?.trim() ||
     env.openrouter?.trim() ||
     config.openrouterApiKey?.trim() ||

@@ -30,7 +30,7 @@ export async function classifySearch({
   requestedPlatform = "auto",
   capabilities = { instagram: true, tiktok: true, linkedin: true },
   apiKey,
-  model = process.env.OPENROUTER_JEV_MODEL || "~typesafe/jev-latest",
+  model = process.env.OPENROUTER_JEV_MODEL || "jev-1.13.0",
   client,
   fetchImpl = fetch,
   signal,
@@ -105,7 +105,7 @@ export async function requestChoice({ request, key, apiKey, client, fetchImpl = 
   try {
     response = client
       ? await client.systemOne(request, { signal })
-      : await requestOpenRouterDecision({ apiKey, request, fetchImpl, signal });
+      : await requestTypesafeDecision({ apiKey, request, fetchImpl, signal });
   } catch (error) {
     signal?.throwIfAborted();
     throw new AppError(`Jev decision failed: ${error.message}`, { code: "JEV_UNAVAILABLE", status: 502 });
@@ -147,23 +147,22 @@ export async function requestChoice({ request, key, apiKey, client, fetchImpl = 
   };
 }
 
-async function requestOpenRouterDecision({ apiKey, request, fetchImpl, signal }) {
+async function requestTypesafeDecision({ apiKey, request, fetchImpl, signal }) {
   if (!apiKey?.trim()) {
-    throw new Error("OPENROUTER_API_KEY is missing");
+    throw new Error("TYPESAFE_API_KEY is missing");
   }
-  const response = await fetchImpl("https://openrouter.ai/api/alpha/decisions", {
+  const response = await fetchImpl("https://api.typesafe.ai/v1/systemone", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey.trim()}`,
       "Content-Type": "application/json",
-      "X-Title": "jev-social",
     },
     body: JSON.stringify(request),
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15_000)]) : AbortSignal.timeout(15_000),
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(payload?.error?.message || `OpenRouter returned HTTP ${response.status}`);
+    throw new Error(payload?.error?.message || `TypeSafe returned HTTP ${response.status}`);
   }
   return payload;
 }

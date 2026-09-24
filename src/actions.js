@@ -156,7 +156,7 @@ export function availableActions({ platform, query, goal, items, history, comman
 export async function chooseAction({ goal, platform, actions, history, items, limit, remainingSteps, ...options }) {
   if (!actions.length) throw new AppError("No supported actions are available.", { code: "NO_ACTIONS" });
   const request = {
-    model: options.model || "~typesafe/jev-latest",
+    model: options.model || "jev-1.13.0",
     state: {
       request: goal,
       platform,
