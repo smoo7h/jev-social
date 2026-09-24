@@ -53,6 +53,14 @@
                     <option value="linkedin">LinkedIn</option>
                   </select>
                 </label>
+                <label class="field-group">
+                  <span>RESULTS</span>
+                  <input id="limit" name="limit" type="number" min="1" max="100" step="1" value="12" required />
+                </label>
+                <label class="field-group">
+                  <span>MAX STEPS</span>
+                  <input id="max-steps" name="maxSteps" type="number" min="1" max="30" step="1" value="20" required />
+                </label>
                 <div class="readiness" aria-live="polite">
                   <span><i id="jev-dot"></i><b id="jev-status">Jev checking</b></span>
                   <span><i id="socai-dot"></i><b id="socai-status">socai checking</b></span>

@@ -74,6 +74,7 @@ test("runSearch lets Jev choose a specific post, then finish without an autonomo
     const run = await runSearch({query:'find handmade art on Instagram',limit:2}, {env,client,onEvent:(event)=>events.push(event)});
     assert.equal(run.query, 'handmade art');
     assert.equal(run.status, 'completed');
+    assert.equal(run.maxSteps, 20);
     assert.deepEqual(run.actions.map((entry) => entry.action.kind), ['search','read_post','finish']);
     assert.equal(run.socaiOutputs.length, 2);
     assert.match(run.command, /get-posts --post https:\/\/www.instagram.com\/p\/second\//);

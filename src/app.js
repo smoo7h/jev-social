@@ -9,7 +9,7 @@ import { saveRun } from "./runs.js";
 import { actionCapabilities, probeSocai, runSocaiAction, sanitizeCliErrorText } from "./socai.js";
 
 export async function runSearch(
-  { query, platform = "auto", limit = 4, maxSteps = 12 },
+  { query, platform = "auto", limit = 12, maxSteps = 20 },
   { env = process.env, client, onEvent, signal } = {},
 ) {
   const request = query?.trim();

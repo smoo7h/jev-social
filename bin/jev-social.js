@@ -20,8 +20,8 @@ Usage:
 
 Search options:
   --platform <auto|instagram|tiktok|linkedin>  Platform hint (default: auto)
-  --limit <1-100>                      Result limit (default: 10)
-  --max-steps <1-30>                   Decision budget (default: 12)
+  --limit <1-100>                      Result limit (default: 12)
+  --max-steps <1-30>                   Decision budget (default: 20)
 
 Configuration (normally auto-loaded from .env):
   --api-key <key>                      OpenRouter API key (prompt is safer)
@@ -59,7 +59,7 @@ try {
     const flags = parseArgs(rest);
     const query = flags._.join(" ").trim();
     const run = await runSearch(
-      { query, platform: flags.platform || "auto", limit: Number(flags.limit ?? 10), maxSteps: Number(flags.maxSteps ?? 12) },
+      { query, platform: flags.platform || "auto", limit: Number(flags.limit ?? 12), maxSteps: Number(flags.maxSteps ?? 20) },
       {
         onEvent(event) {
           if (event.message) console.error(`[${event.stage}] ${event.message}`);

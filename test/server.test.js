@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -159,4 +159,13 @@ test("/api/status never leaks config path when readConfig fails", async () => {
     await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test("the composer exposes result and step budgets and sends them as numbers", async () => {
+  const html = await readFile(new URL("../public/index.html", import.meta.url), "utf8");
+  const script = await readFile(new URL("../public/app.js", import.meta.url), "utf8");
+  assert.match(html, /<input id="limit"[^>]*type="number"[^>]*min="1" max="100"[^>]*value="12"/);
+  assert.match(html, /<input id="max-steps"[^>]*type="number"[^>]*min="1" max="30"[^>]*value="20"/);
+  assert.match(script, /limit: \$\("#limit"\)\.valueAsNumber/);
+  assert.match(script, /maxSteps: \$\("#max-steps"\)\.valueAsNumber/);
 });

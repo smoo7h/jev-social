@@ -60,6 +60,8 @@ elements.searchForm.addEventListener("submit", async (event) => {
     const run = await streamApi("/api/search-stream", {
       query,
       platform: $("#platform").value,
+      limit: $("#limit").valueAsNumber,
+      maxSteps: $("#max-steps").valueAsNumber,
     }, handleStreamEvent, activeController.signal);
     renderRun(run);
   } catch (error) {
