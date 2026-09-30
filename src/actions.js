@@ -179,7 +179,7 @@ export async function chooseAction({ goal, platform, actions, history, items, li
         is_reel: isReel(item),
         is_pinned: item.is_pinned ?? item.pinned,
       })),
-      research_focus: platform === "instagram" && /kick|clip|trend|breakout/i.test(goal)
+      research_focus: platform === "instagram" && /\bkick\b/i.test(goal)
         ? "Find relevant Kick clipper accounts from search results, open their profiles, compare their newest 12 unpinned posts by median views, and inspect recent observed Reels. Expand only through profile or post URLs captured from those results."
         : undefined,
     },
@@ -194,7 +194,7 @@ export async function chooseAction({ goal, platform, actions, history, items, li
             "Start with the literal search or an explicit URL. On LinkedIn choose people, content, or companies to match the goal.",
             "Read the most relevant posts and their comments before finishing; search cards alone are not detailed evidence. Prefer a supplied explicit profile seed over a new search when requested.",
             "Open a promising profile when search results are profiles instead of posts, or when the goal is creator discovery.",
-            ...(platform === "instagram" && /kick|clip|trend|breakout/i.test(goal) ? [
+            ...(platform === "instagram" && /\bkick\b/i.test(goal) ? [
               "For Kick clipper discovery, favor accounts whose observed bio, name, or posts directly indicate Kick streamer clips; do not infer relevance from views alone.",
               "Open relevant observed profiles and inspect their captured recent posts before selecting reels. Use available dates, view counts, and profile relationships; missing metrics are unknown.",
               "Expand only to profiles or reels linked from captured results. Search cards are leads, not opened-post evidence.",

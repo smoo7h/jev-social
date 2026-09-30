@@ -70,6 +70,9 @@ test('Jev gets the bounded Kick clipper research focus and observed metrics',asy
   assert.equal(request.state.evidence[0].is_pinned,false);
   assert.equal(request.state.evidence[1].text,'Daily Kick clips');
   assert.ok(Object.values(request.questions.action.instructions.rules).some((rule)=>rule.includes('missing metrics are unknown')));
+  await chooseAction({goal:'Find fashion clip trends on Instagram',platform:'instagram',actions,history:[],items:[],limit:4,remainingSteps:6,client});
+  assert.equal(request.state.research_focus,undefined);
+  assert.ok(!request.questions.action.instructions.rules.some(rule=>rule.includes('Kick')));
 });
 
 test('platform gates are detected in nested results and boolean page-state flags',()=>{
