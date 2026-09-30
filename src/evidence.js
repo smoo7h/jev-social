@@ -67,13 +67,14 @@ export function instagramTrendSignals(items, now = Date.now()) {
     const baselinePosts = (orderUnknown ? unpinned : [...unpinned].sort((a, b) => timestamp(b) - timestamp(a))).slice(0, 12);
     const observedViews = baselinePosts.map(views).filter(Number.isFinite);
     const medianViews = observedViews.length === 12 && !pinUnknown && !orderUnknown ? median(observedViews) : null;
+    const medianViewsApproximate = baselinePosts.some((item) => item.view_count_approximate === true);
     const reelRecords = records.filter(isReel);
     const recentReels = reelRecords.filter((item) => {
       const age = ageHours(item, now);
       return isReel(item) && age !== null && age <= 168 && age >= 0;
     });
     const unknownAgeReels = reelRecords.filter((item) => timestamp(item) === null).length;
-    profiles.set(profile, { medianViews, baselineCount: observedViews.length, baselinePosts: baselinePosts.length, pinUnknown, orderUnknown, recentReels: recentReels.length, unknownAgeReels });
+    profiles.set(profile, { medianViews, medianViewsApproximate, baselineCount: observedViews.length, baselinePosts: baselinePosts.length, pinUnknown, orderUnknown, recentReels: recentReels.length, unknownAgeReels });
   }
 
   const reels = items.filter((item) => isReel(item) && targetKind(item.url, "instagram") === "post").map((item) => {
@@ -84,9 +85,9 @@ export function instagramTrendSignals(items, now = Date.now()) {
     const viewsPerHour = count !== null && age !== null && age > 0 ? count / age : null;
     const multiple = count !== null && baseline !== null && baseline > 0 ? count / baseline : null;
     return {
-      url: item.url, profile, views: count, ageHours: age, viewsPerHour,
+      url: item.url, profile, views: count, viewsApproximate: item.view_count_approximate === true, ageHours: age, viewsPerHour,
       medianViews: baseline, medianMultiple: multiple,
-      breakout: item.detail_read === true && age !== null && age >= 2 && age <= 48 && multiple !== null && multiple >= 3,
+      breakout: item.detail_read === true && item.view_count_approximate !== true && !profiles.get(profile)?.medianViewsApproximate && age !== null && age >= 2 && age <= 48 && multiple !== null && multiple >= 3,
     };
   }).sort((a, b) => (b.viewsPerHour ?? -1) - (a.viewsPerHour ?? -1));
 
@@ -133,11 +134,11 @@ export function evidenceReport({ request, platform, items, actions, status, stop
   const lines = ["# Captured evidence", "", `Request: ${markdown(request)}`, "", `${items.length} records from ${platform}; ${actions.filter((step) => step.command).length} browser operations.`, ""];
   if (platform === "instagram" && /kick|clip|trend|breakout/i.test(request)) {
     const signals = instagramTrendSignals(items);
-    lines.push("## Instagram trend signals", "", "Account medians require 12 profile-captured posts with known views, dates, and pin status, ordered newest first after removing pinned posts. An incomplete sample leaves the median unknown. A breakout candidate must be an opened Reel aged 2–48 hours with at least 3× that account median; candidates rank by views per hour.", "");
+    lines.push("## Instagram trend signals", "", "Account medians require 12 profile-captured posts with known views, dates, and pin status, ordered newest first after removing pinned posts. An incomplete sample leaves the median unknown. Rounded view readings remain estimates and cannot verify a breakout threshold. A breakout candidate must be an opened Reel aged 2–48 hours with at least 3× that account median; candidates rank by views per hour.", "");
     const rankedProfiles = [...signals.profiles].sort(([, a], [, b]) => (b.medianViews ?? -1) - (a.medianViews ?? -1) || b.recentReels - a.recentReels);
     lines.push("Accounts below are shown in observed median-view order, then by confirmed Reels in 7 days. Kick relevance must be assessed from the linked evidence; opening a profile alone does not establish relevance. Incomplete metrics cannot establish the requested source ranking.", "");
     for (const [profile, baseline] of rankedProfiles) {
-      lines.push(`- [Account](${profile}): median views ${baseline.medianViews ?? "unknown"} (${baseline.baselineCount} view counts across ${baseline.baselinePosts}/12 confirmed-unpinned posts${baseline.pinUnknown ? `; pin status unknown for ${baseline.pinUnknown}` : ""}${baseline.orderUnknown ? `; dates unknown for ${baseline.orderUnknown}` : ""}); Reels confirmed within 7 days ${baseline.recentReels}${baseline.unknownAgeReels ? `; total unknown, age missing for ${baseline.unknownAgeReels}` : "; observed sample only"}.`);
+      lines.push(`- [Account](${profile}): median views ${baseline.medianViews !== null && baseline.medianViewsApproximate ? "approximately " : ""}${baseline.medianViews ?? "unknown"} (${baseline.baselineCount} view counts across ${baseline.baselinePosts}/12 confirmed-unpinned posts${baseline.pinUnknown ? `; pin status unknown for ${baseline.pinUnknown}` : ""}${baseline.orderUnknown ? `; dates unknown for ${baseline.orderUnknown}` : ""}); Reels confirmed within 7 days ${baseline.recentReels}${baseline.unknownAgeReels ? `; total unknown, age missing for ${baseline.unknownAgeReels}` : "; observed sample only"}.`);
     }
     if (!signals.profiles.size) lines.push("- Account baselines: unknown; no profile-to-post relationships were captured.");
     lines.push("");
@@ -154,6 +155,9 @@ export function evidenceReport({ request, platform, items, actions, status, stop
     const text = item.caption || item.description || item.text || item.bio || item.subtitle;
     if (text) lines.push(markdown(text), "");
     lines.push(item.detail_read ? "Details opened through socai." : "Search or profile card; details not opened.", "");
+    if (platform === "instagram" && views(item) !== null) {
+      lines.push(`Views: ${item.view_count_approximate === true ? "approximately " : ""}${views(item)}${item.view_count_text ? ` (displayed ${markdown(item.view_count_text)})` : ""}.`, "");
+    }
     const comments = item.top_comments || (Array.isArray(item.comments) ? item.comments : []);
     for (const comment of comments.slice(0, 8)) {
       const content = comment.text || comment.content;

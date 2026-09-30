@@ -134,6 +134,8 @@ Instagram goals explicitly mentioning Kick give Jev a bounded profile-first clip
 
 The report computes an account median only from 12 profile-captured posts with known dates, pin status, and view counts. Opened Reels aged 2–48 hours at 3× that median qualify as breakout candidates, ordered by views/hour. Missing views, dates, or pins leave the baseline unknown; likes never substitute for views. Seven-day counts cover confirmed observations, and incomplete samples cannot establish a full source ranking. Search and profile cards remain labeled as unopened until a post-detail read succeeds.
 
+The view-count correction requires a corrected socai source build: its default profile read retains Posts-grid cards and joins visible Reels-tab counts by shortcode. Use `SOCAI_BIN=/absolute/path/to/corrected/socai` for the experiment; this does not replace the installed CLI. socai 0.6.0 omits these readings. Counts carry `view_count_text`, `view_count_source`, and `view_count_approximate`; Jev preserves them in evidence and decisions, labels estimates in reports, and does not verify breakout thresholds from rounded readings. Missing pin status still prevents a verified account baseline.
+
 Or call socai directly:
 
 ```bash
