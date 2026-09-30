@@ -137,3 +137,35 @@ test('array profile cards do not claim that post details were opened',()=>{
   const items=extractEvidence([{url:'https://www.instagram.com/demo/reel/card/',kind:'reel'}],{platform:'instagram',kind:'read_profile',target:'https://www.instagram.com/demo/'});
   assert.equal(items[0].detail_read,false);
 });
+
+test('socai Reel display precision survives capture, detail merging, and Jev decisions', async () => {
+  const profile='https://www.instagram.com/creator/';
+  const cards=extractEvidence({url:profile,username:'creator',posts:[{id:'First123',kind:'reel',url:'https://www.instagram.com/creator/reel/First123/',view_count:26500,view_count_text:'26.5K',view_count_approximate:true,view_count_source:'visible_reels_grid'}]}, {platform:'instagram',kind:'read_profile',target:profile});
+  const items=mergeEvidence(cards,extractEvidence({posts:[{url:'https://www.instagram.com/p/First123/',caption:'Opened detail',view_count:null}]},{platform:'instagram',kind:'read_post',target:'https://www.instagram.com/p/First123/'}));
+  assert.equal(items[0].view_count,26500);
+  assert.equal(items[0].view_count_text,'26.5K');
+  assert.equal(items[0].view_count_approximate,true);
+  assert.equal(items[0].is_pinned,undefined);
+  let request;
+  const actions=availableActions({...base,items});
+  await chooseAction({...base,actions,items,remainingSteps:2,client:{async systemOne(value){request=value;return {answers:{action:{type:'choice',choice:actions[0].id,confidence:0.9}}};}}});
+  assert.equal(request.state.evidence[0].views,26500);
+  assert.equal(request.state.evidence[0].views_approximate,true);
+  assert.equal(request.state.evidence[0].views_text,'26.5K');
+  assert.equal(request.state.evidence[0].views_source,'visible_reels_grid');
+});
+
+test('rounded Reel readings remain estimates and cannot verify a breakout threshold', () => {
+  const now=Date.parse('2026-09-30T16:00:00Z');
+  const profile='https://www.instagram.com/creator/';
+  const posts=Array.from({length:12},(_,i)=>({url:`https://www.instagram.com/p/Base${i}/`,source_profile_url:profile,published_at:new Date(now-(i+8)*3600000).toISOString(),view_count:1000,is_pinned:false,kind:'reel'}));
+  const candidate={url:'https://www.instagram.com/p/Recent123/',source_profile_url:profile,published_at:new Date(now-4*3600000).toISOString(),view_count:3000,view_count_text:'3K',view_count_approximate:true,is_pinned:false,kind:'reel',detail_read:true};
+  assert.equal(instagramTrendSignals([...posts,{...candidate,view_count_approximate:false}],now).reels.find(x=>x.url===candidate.url).breakout,true);
+  let signals=instagramTrendSignals([...posts,candidate],now);
+  assert.equal(signals.reels.find(x=>x.url===candidate.url).breakout,false);
+  assert.equal(signals.reels.find(x=>x.url===candidate.url).viewsApproximate,true);
+  posts[0].view_count_approximate=true;
+  signals=instagramTrendSignals([...posts,{...candidate,view_count_approximate:false}],now);
+  assert.equal(signals.profiles.get(profile).medianViewsApproximate,true);
+  assert.equal(signals.reels.find(x=>x.url===candidate.url).breakout,false);
+});
