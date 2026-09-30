@@ -128,6 +128,12 @@ npm start -- search "find handmade art on Instagram and read the comments" --lim
 
 For browser connection checks, platform login barriers, and safe status diagnostics, see [Troubleshooting](https://github.com/socai-io/jev-social/blob/main/docs/troubleshooting.md).
 
+### Instagram discovery experiment (source checkout)
+
+Instagram goals mentioning Kick, clips, trends, or breakouts give Jev a bounded profile-first research focus. Captured profile Reel links become concrete post-opening choices. An explicit profile URL can seed a small run with `--limit 12 --max-steps 4`.
+
+The report computes an account median only from 12 profile-captured posts with known dates, pin status, and view counts. Opened Reels aged 2–48 hours at 3× that median qualify as breakout candidates, ordered by views/hour. Missing views, dates, or pins leave the baseline unknown; likes never substitute for views. Seven-day counts cover confirmed observations, and incomplete samples cannot establish a full source ranking. Search and profile cards remain labeled as unopened until a post-detail read succeeds.
+
 Or call socai directly:
 
 ```bash
